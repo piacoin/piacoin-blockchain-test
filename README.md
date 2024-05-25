@@ -1,135 +1,176 @@
-[![Join the chat at https://gitter.im/fork-ethereum/Lobby](https://badges.gitter.im/fork-ethereum/Lobby.svg)](https://gitter.im/fork-ethereum/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+# PiaCoin Blockchain Test
 
-# Installation
+[Join the chat at Gitter](https://gitter.im/fork-ethereum/Lobby)
 
-## Docker
+## Installation
 
-[Install Docker](https://www.docker.com/community-edition)
+### Docker
 
-_Dockerfile_
+1. **Install Docker**
 
-https://hub.docker.com/r/forkblockchain/fork-ethereum/
+    ```bash
+    docker pull forkblockchain/fork-ethereum:latest
+    ```
 
-docker pull forkblockchain/fork-ethereum:latest
+2. **Docker Compose**
 
-or 
+    ```bash
+    docker-compose up -d
+    ```
 
-_Docker compose_
+    then
 
-docker-compose up -d
+    ```bash
+    ./enter-docker.sh
+    cd /ethereum
+    ```
 
-then
+### Vagrant
 
-./enter-docker.sh
+1. **Install VirtualBox**
+2. **Install Vagrant**
 
-cd /ethereum
+    ```bash
+    vagrant up --provision
+    cd /home/ethereum/
+    ```
 
-## Vagrant
+## Initialization of Chain
 
-[Install VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+### Geth Commands
 
-[Install Vagrant](https://www.vagrantup.com/docs/installation/)
+1. **Initialize Genesis**
 
-vagrant up --provision
+    ```bash
+    ./init-genesis.sh
+    ```
 
-cd /home/ethereum/
+2. **Start Geth**
 
-# Initialization of Chain
+    ```bash
+    ./start-geth.sh
+    ```
 
-_geth Commands_
+3. **Connect to Geth**
 
-./init-genesis.sh
+    ```bash
+    ./connect-geth.sh
+    ```
 
-./start-geth.sh 
+## Account Setup Commands
 
-./connect-geth.sh
+1. **Create New Account**
 
+    ```javascript
+    personal.newAccount();
+    ```
 
-# Account Setup Commands
+    or (need to specify passphrase as argument in container)
 
-_Create New Account_
+    ```javascript
+    personal.newAccount("YOUR PASSPHRASE");
+    ```
 
-personal.newAccount();
+2. **Show Balance**
 
-or (need to specify passpharse as argument in container)
+    ```javascript
+    eth.getBalance(eth.accounts[0]);
+    ```
 
-personal.newAccount("YOUR PASSPHRASE");
+3. **Generate DAG and Mine Coins**
 
-_Show Balance_
+    ```javascript
+    miner.start();
+    ```
 
-eth.getBalance(eth.accounts[0]);
+    ```javascript
+    miner.stop();
+    ```
 
-_Generate DAG and mine coins_
+## Smart Contract Example
 
-miner.start();
+### Contract Commands
 
-miner.stop();
+1. **Load Script**
 
-# Smart Contract Example
-_Contract Commands_
+    ```javascript
+    loadScript("simple.js");
+    ```
 
-loadScript("simple.js")
+2. **Parse Simple Contract**
 
-var parsedSimpleContract = web3.eth.contract(JSON.parse(simpleContract.contracts["simple.sol:Simple"].abi));
+    ```javascript
+    var parsedSimpleContract = web3.eth.contract(JSON.parse(simpleContract.contracts["simple.sol:Simple"].abi));
+    ```
 
-personal.unlockAccount(eth.accounts[0], "YOUR PASSPHRASE");
+3. **Unlock Account**
 
-_Log mined contract_
-```
-var simpleContract = parsedSimpleContract.new({ from: eth.accounts[0], data: "0x" + simpleContract.contracts["simple.sol:Simple"].bin, gas: 4700000},
-  function (e, contract) {
-    console.log(e, contract);
-    if (typeof contract.address !== 'undefined') {
-         console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
-    }
-  }
-);
-```
+    ```javascript
+    personal.unlockAccount(eth.accounts[0], "YOUR PASSPHRASE");
+    ```
 
-_Mine contract_
-miner.start();
+4. **Log Mined Contract**
 
-miner.stop();
+    ```javascript
+    var simpleContract = parsedSimpleContract.new({ 
+        from: eth.accounts[0], 
+        data: "0x" + simpleContract.contracts["simple.sol:Simple"].bin, 
+        gas: 4700000
+    }, function (e, contract) {
+        console.log(e, contract);
+        if (typeof contract.address !== 'undefined') {
+            console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
+        }
+    });
+    ```
 
-_Execute locally_
+5. **Mine Contract**
 
-simpleContract.multiply.call(9,2);
+    ```javascript
+    miner.start();
+    ```
 
-_Execute on evm_
+    ```javascript
+    miner.stop();
+    ```
 
-simpleContract.multiply.sendTransaction(2,2,{from:eth.accounts[0]})
+6. **Execute Locally**
 
-_Process smart contract transaction_
+    ```javascript
+    simpleContract.multiply.call(9,2);
+    ```
 
-miner.start();
+7. **Execute on EVM**
 
-miner.stop();
+    ```javascript
+    simpleContract.multiply.sendTransaction(2,2,{from:eth.accounts[0]})
+    ```
 
-_View Logged Events_
+8. **Process Smart Contract Transaction**
 
-var simpleContractEvents = simpleContract.allEvents({fromBlock: 0, toBlock: 'latest'});
+    ```javascript
+    miner.start();
+    ```
 
-```
-simpleContractEvents.get(function(error, logs) {
-  logs.forEach( function(log,error) {
-    console.log(JSON.stringify(log.args));
-  })
-});
-```
+    ```javascript
+    miner.stop();
+    ```
 
-# References
+9. **View Logged Events**
 
-Puppeth
-https://modalduality.org/posts/puppeth/
+    ```javascript
+    var simpleContractEvents = simpleContract.allEvents({fromBlock: 0, toBlock: 'latest'});
+    simpleContractEvents.get(function(error, logs) {
+        logs.forEach( function(log,error) {
+            console.log(JSON.stringify(log.args));
+        })
+    });
+    ```
 
-Private Network
-https://github.com/ethereum/go-ethereum/wiki/Private-network
+## References
 
-Default Bootnodes
-https://github.com/ethereum/go-ethereum/blob/master/params/bootnodes.go
-
-
-https://alanbuxton.wordpress.com/2017/07/19/first-steps-with-ethereum-private-networks-and-smart-contracts-on-ubuntu-16-04/
-
-
-https://ethereum.stackexchange.com/questions/15435/how-to-compile-solidity-contracts-with-geth-v1-6
+- [Puppeth](https://modalduality.org/posts/puppeth/)
+- [Private Network](https://github.com/ethereum/go-ethereum/wiki/Private-network)
+- [Default Bootnodes](https://github.com/ethereum/go-ethereum/blob/master/params/bootnodes.go)
+- [First Steps with Ethereum Private Networks and Smart Contracts](https://alanbuxton.wordpress.com/2017/07/19/first-steps-with-ethereum-private-networks-and-smart-contracts-on-ubuntu-16-04/)
+- [How to Compile Solidity Contracts with Geth v1.6](https://ethereum.stackexchange.com/questions/15435/how-to-compile-solidity-contracts-with-geth-v1-6)
